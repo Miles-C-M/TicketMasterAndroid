@@ -12,10 +12,16 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private var eventType = ""
     private var cityName = ""
+
+    private val baseURL = "https://app.ticketmaster.com/discovery/v2/"
+    private val apiKEY = "utUZ2vXWbvwVOxG76DO2Fs6yqeiqXpbx"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -59,15 +65,29 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         }
     }
 
+    // Submit button functionality
     fun buttonClick(view: View) {
+        // Set cityName
         cityName = findViewById<EditText>(R.id.city_input).text.toString()
-        Toast.makeText(this, eventType, Toast.LENGTH_SHORT).show()
+
+        // Input validation
         if (eventType == "" || eventType == "Error") {
             eventMissing()
         }
         if (cityName == "") {
             locationMissing()
         }
+
+        // Call ticketmaster api with cityName and eventType info
+
+        // Retrofit
+        val retrofit = Retrofit.Builder()
+            .baseUrl(baseURL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val eventAPI = retrofit.create(EventService::class.java)
+        eventAPI.searchEvents(apiKEY, cityName, eventType, "date,asc")
     }
 
     // Shows dialog message for missing location input
