@@ -1,6 +1,7 @@
 package com.example.ticketmasterandroid
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -12,6 +13,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.retrofitexample.EventAdapter
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -21,6 +28,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     private val baseURL = "https://app.ticketmaster.com/discovery/v2/"
     private val apiKEY = "utUZ2vXWbvwVOxG76DO2Fs6yqeiqXpbx"
+
+    private val TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,21 +82,53 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         // Input validation
         if (eventType == "" || eventType == "Error") {
             eventMissing()
-        }
-        if (cityName == "") {
+        } else if (cityName == "") {
             locationMissing()
+        } else {
+
+            // Set up recycler view
+            val eventList = ArrayList<Event>()
+            val adapter = EventAdapter(eventList)
+            val recycler = findViewById<RecyclerView>(R.id.event_recycler)
+
+            recycler.adapter = adapter
+            recycler.layoutManager = LinearLayoutManager(this)
+
+
+            // Call ticketmaster api with cityName and eventType info
+            // Retrofit
+            val retrofit = Retrofit.Builder()
+                .baseUrl(baseURL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+
+            val eventAPI = retrofit.create(EventService::class.java)
+            eventAPI.searchEvents(apiKEY, cityName, eventType, "date,asc").enqueue(object :
+                Callback<EventResponse> {
+                override fun onResponse(
+                    call: Call<EventResponse>,
+                    response: Response<EventResponse>
+                ) {
+                    Log.d(TAG, "onResponse: $response")
+
+                    val body = response.body()
+                    if (body == null) {
+                        Log.d(TAG, "Valid response was not received")
+                        return
+                    }
+
+                    Log.d(TAG, body.embedded.events[0].name)
+                    eventList.addAll(body.embedded.events)
+                    adapter.notifyDataSetChanged()
+
+                }
+
+                override fun onFailure(call: Call<EventResponse>, t: Throwable) {
+                    Log.d(TAG, "onFailure: $t")
+                }
+
+            })
         }
-
-        // Call ticketmaster api with cityName and eventType info
-
-        // Retrofit
-        val retrofit = Retrofit.Builder()
-            .baseUrl(baseURL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val eventAPI = retrofit.create(EventService::class.java)
-        eventAPI.searchEvents(apiKEY, cityName, eventType, "date,asc")
     }
 
     // Shows dialog message for missing location input
