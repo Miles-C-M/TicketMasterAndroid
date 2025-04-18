@@ -1,16 +1,22 @@
 package com.example.retrofitexample
 
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.ticketmasterandroid.Event
 import com.example.ticketmasterandroid.R
 import org.w3c.dom.Text
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 class EventAdapter(private val events: ArrayList<Event>) : RecyclerView.Adapter<EventAdapter.MyViewHolder>() {
@@ -39,14 +45,36 @@ class EventAdapter(private val events: ArrayList<Event>) : RecyclerView.Adapter<
         return MyViewHolder(view)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         val currentItem = events[position]
         holder.eventName.text = currentItem.name
         holder.venueName.text = currentItem.embedded.venues[0].name
-        holder.address.text = currentItem.embedded.venues[0].address.line1
-        //holder.date.text = "${currentItem.dates.start.localDate} ${currentItem.dates.start.localTime}"
+        holder.address.text = buildString {
+            append(currentItem.embedded.venues[0].address.line1)
+            append(", ")
+            append(currentItem.embedded.venues[0].city.name)
+            append(", ")
+            append(currentItem.embedded.venues[0].state.stateCode)
+        }
+        //"localDate": "2025-04-16",
+        //"localTime": "19:30:00"
+        val localDate = LocalDate.parse(currentItem.dates.start.localDate)
+        val localTime = LocalTime.parse(currentItem.dates.start.localTime)
+        // Format the date as MM/dd/yyyy
+        val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+        // Format the time as h:mm a
+        val timeFormatter = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH)
+        val formattedDate = localDate.format(dateFormatter)
+        val formattedTime = localTime.format(timeFormatter)
+
+        holder.date.text = buildString {
+            append(formattedDate)
+            append(" @ ")
+            append(formattedTime)
+        }
 
         // Get the context for glide
         val context = holder.itemView.context
