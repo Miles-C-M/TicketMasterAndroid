@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/venue_name"
-        android:layout_width="352dp"
+        android:layout_width="0dp"
         android:layout_height="29dp"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="29dp"
@@ -38,11 +38,13 @@
 
     <ImageView
         android:id="@+id/event_image"
-        android:layout_width="351dp"
-        android:layout_height="238dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="30dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -99,6 +101,7 @@
         android:layout_height="65dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="27dp"
+        android:linksClickable="false"
         android:text="See Tickets"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/date"

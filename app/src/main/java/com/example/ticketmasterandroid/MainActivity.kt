@@ -74,6 +74,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         }
     }
 
+
     // Submit button functionality
     fun buttonClick(view: View) {
         // Set cityName
@@ -112,15 +113,26 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                     Log.d(TAG, "onResponse: $response")
 
                     val body = response.body()
-                    if (body == null) {
-                        Log.d(TAG, "Valid response was not received")
+
+                    if (!response.isSuccessful || body == null) {
+                        Log.d(TAG, "Response not successful or body is null")
+                        Toast.makeText(this@MainActivity, "Something went wrong. Try again.", Toast.LENGTH_LONG).show()
                         return
                     }
 
-                    Log.d(TAG, body.embedded.events[0].name)
-                    eventList.addAll(body.embedded.events)
-                    adapter.notifyDataSetChanged()
+                    val embedded = body.embedded
+                    val events = embedded?.events
 
+                    if (events.isNullOrEmpty()) {
+                        Log.d(TAG, "No events found for the given city or category.")
+                        Toast.makeText(this@MainActivity, "No events found for your search.", Toast.LENGTH_LONG).show()
+                        return
+                    }
+
+                    eventList.clear()
+                    Log.d(TAG, events[0].name)
+                    eventList.addAll(events)
+                    adapter.notifyDataSetChanged()
                 }
 
                 override fun onFailure(call: Call<EventResponse>, t: Throwable) {

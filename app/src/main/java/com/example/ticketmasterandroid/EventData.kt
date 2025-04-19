@@ -16,7 +16,9 @@ data class Event(
     val dates: Dates,
     @SerializedName("_embedded")
     val embedded: EventEmbedded,
-    val url: String // Ticketmaster event URL
+    val url: String, // Ticketmaster event URL
+    val priceRange: PriceRanges,
+    val images: List<EventImage>
 )
 
 data class Dates(
@@ -40,9 +42,25 @@ data class Venue(
     val url: String? = null // In case some venues have direct URLs
 )
 
+
 data class City(val name: String)
 data class State(val stateCode: String)
 data class Address(val line1: String)
+
+data class PriceRanges(
+    val priceRanges: List<PriceRange>
+)
+
+data class PriceRange(
+    val min: Int,
+    val max: Int
+)
+
+data class EventImage(
+    val url: String,
+    val width: Int,
+    val height: Int
+)
 /*
 {
     "_embedded": {
